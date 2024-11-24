@@ -24,9 +24,19 @@ function RootComponent() {
         </Link>
         <div className="mx-5">|</div>
         <Link
+          to="/search"
+          search={{ q: "" }}
+          activeProps={{
+            className: "font-bold",
+          }}
+        >
+          Search
+        </Link>
+        <div className="mx-5">|</div>
+        <Link
           to="/about"
           activeProps={{
-            className: 'font-bold',
+            className: "font-bold",
           }}
         >
           About

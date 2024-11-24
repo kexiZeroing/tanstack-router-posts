@@ -11,11 +11,19 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as SearchImport } from './routes/search'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
+import { Route as SearchIndexImport } from './routes/search.index'
 import { Route as PostsPostIdImport } from './routes/posts/$postId'
 
 // Create/Update Routes
+
+const SearchRoute = SearchImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const AboutRoute = AboutImport.update({
   id: '/about',
@@ -27,6 +35,12 @@ const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const SearchIndexRoute = SearchIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SearchRoute,
 } as any)
 
 const PostsPostIdRoute = PostsPostIdImport.update({
@@ -53,6 +67,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutImport
       parentRoute: typeof rootRoute
     }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchImport
+      parentRoute: typeof rootRoute
+    }
     '/posts/$postId': {
       id: '/posts/$postId'
       path: '/posts/$postId'
@@ -60,48 +81,73 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostsPostIdImport
       parentRoute: typeof rootRoute
     }
+    '/search/': {
+      id: '/search/'
+      path: '/'
+      fullPath: '/search/'
+      preLoaderRoute: typeof SearchIndexImport
+      parentRoute: typeof SearchImport
+    }
   }
 }
 
 // Create and export the route tree
 
+interface SearchRouteChildren {
+  SearchIndexRoute: typeof SearchIndexRoute
+}
+
+const SearchRouteChildren: SearchRouteChildren = {
+  SearchIndexRoute: SearchIndexRoute,
+}
+
+const SearchRouteWithChildren =
+  SearchRoute._addFileChildren(SearchRouteChildren)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/search': typeof SearchRouteWithChildren
   '/posts/$postId': typeof PostsPostIdRoute
+  '/search/': typeof SearchIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/posts/$postId': typeof PostsPostIdRoute
+  '/search': typeof SearchIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/search': typeof SearchRouteWithChildren
   '/posts/$postId': typeof PostsPostIdRoute
+  '/search/': typeof SearchIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/posts/$postId'
+  fullPaths: '/' | '/about' | '/search' | '/posts/$postId' | '/search/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/posts/$postId'
-  id: '__root__' | '/' | '/about' | '/posts/$postId'
+  to: '/' | '/about' | '/posts/$postId' | '/search'
+  id: '__root__' | '/' | '/about' | '/search' | '/posts/$postId' | '/search/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  SearchRoute: typeof SearchRouteWithChildren
   PostsPostIdRoute: typeof PostsPostIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  SearchRoute: SearchRouteWithChildren,
   PostsPostIdRoute: PostsPostIdRoute,
 }
 
@@ -117,6 +163,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/about",
+        "/search",
         "/posts/$postId"
       ]
     },
@@ -126,8 +173,18 @@ export const routeTree = rootRoute
     "/about": {
       "filePath": "about.tsx"
     },
+    "/search": {
+      "filePath": "search.tsx",
+      "children": [
+        "/search/"
+      ]
+    },
     "/posts/$postId": {
       "filePath": "posts/$postId.tsx"
+    },
+    "/search/": {
+      "filePath": "search.index.tsx",
+      "parent": "/search"
     }
   }
 }

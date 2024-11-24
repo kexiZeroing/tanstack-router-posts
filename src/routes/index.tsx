@@ -25,9 +25,9 @@ function IndexComponent() {
   const { page } = Route.useSearch()
 
   return (
-    <div>
-      <div className="flex justify-end pr-5 py-5">
-        <div className="flex gap-1 text-xl font-bold justify-end">
+    <div className='p-4'>
+      <div className="flex justify-start pr-5 py-5">
+        <div className="flex gap-1 text-xl font-bold">
           {new Array(pages).fill(0).map((_, i) =>
             page === i + 1 ? (
               <div
