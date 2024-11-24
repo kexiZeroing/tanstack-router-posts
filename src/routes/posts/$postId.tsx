@@ -17,7 +17,7 @@ function PostComponent() {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold">{post.title}</h1>
+      <h1 className="text-2xl font-bold">{ post.id }. {post.title}</h1>
       <p>{post.body}</p>
     </div>
   )
