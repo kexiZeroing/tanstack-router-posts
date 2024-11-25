@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, defer, Await } from '@tanstack/react-router'
 
 interface SearchParams {
   q: string;
@@ -11,7 +11,14 @@ async function fetchPosts(query: string = "") {
   }
 
   const r = await fetch(
-    `https://jsonplaceholder.typicode.com/posts?title_like=^${query}`
+    `https://jsonplaceholder.typicode.com/posts?title_like=${query}`
+  );
+  return await r.json();
+}
+
+async function fetchPostComments(id: string) {
+  const r = await fetch(
+    `https://jsonplaceholder.typicode.com/posts/${id}/comments`
   );
   return await r.json();
 }
@@ -19,7 +26,13 @@ async function fetchPosts(query: string = "") {
 export const Route = createFileRoute('/search/')({
   component: SearchRoute,
   loaderDeps: ({ search: { q } }) => ({ q }),
-  loader: ({ deps: { q } }) => fetchPosts(q),
+  loader: async ({ deps: { q } }) => {
+    const posts = await fetchPosts(q);
+    return {
+      posts,
+      firstPostComments: posts?.[0]?.id ? defer(fetchPostComments(posts[0].id)) : null,
+    };
+  },
   validateSearch: (search: { q: string }): SearchParams => {
     return {
       q: (search.q as string) || "",
@@ -28,26 +41,43 @@ export const Route = createFileRoute('/search/')({
 })
 
 function SearchRoute() {
-  const posts = Route.useLoaderData();
+  const { posts, firstPostComments } = Route.useLoaderData();
 
   return (
-    <div className='p-4'>
-      <h1 className='font-bold'>Search Results</h1>
-
-      { posts.map((post: any) => (
-        <div key={post.id} className="p-2">
-          <Link
-            to="/posts/$postId"
-            params={{
-              postId: post.id,
-            }}
-            key={post.id}
-          >
-            <h3 className="font-bold">{post.id}. {post.title}</h3>
-          </Link>
-          <p>{post.body}</p>
+    <>
+      {firstPostComments && (
+        <div className="my-5 p-4">
+          <React.Suspense fallback={<div>Loading...</div>}>
+            <Await promise={firstPostComments}>
+              {(comments) => (
+                <div>
+                  <h2 className="font-bold border-b">Post {posts[0].id}'s Comments</h2>
+                  <ul>
+                    {comments.map((comment: any) => (
+                      <li key={comment.id} className='my-2 p-2'>
+                        <h3>{comment.id}: {comment.name}</h3>
+                        <p>{comment.email}</p>
+                        <p>{comment.body}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </Await>
+          </React.Suspense>
         </div>
-      )) }      
-    </div>
+      )}
+
+      <div className='p-4'>
+        <h2 className='font-bold border-b'>Search Results</h2>
+
+        { posts.map((post: any) => (
+          <div key={post.id} className="p-2">
+            <h3 className="font-bold">{post.id}. {post.title}</h3>
+            <p>{post.body}</p>
+          </div>
+        )) }      
+      </div>
+    </>
   );
 }

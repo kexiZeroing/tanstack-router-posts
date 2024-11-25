@@ -5,10 +5,11 @@ import { z } from "zod"
 const pages = 3
 const postsPerPage = 5
 
-function fetchPosts(page: number = 1) {
-  return fetch(
+async function fetchPosts(page: number = 1) {
+  const r = await fetch(
     `https://jsonplaceholder.typicode.com/posts?_start=${(page - 1) * postsPerPage}&_limit=${postsPerPage}`
-  ).then((r) => r.json())
+  )
+  return await r.json()
 }
 
 export const Route = createFileRoute('/')({

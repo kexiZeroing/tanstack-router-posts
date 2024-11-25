@@ -7,3 +7,4 @@ Run `npm create @tanstack/router@latest` to create an example project that uses 
 2. 100% inferred TypeScript support
 3. Automatic route prefetching
 4. Built-in route loader with SWR caching
+5. Deferred data loading with `defer` and `Await`
